@@ -7,5 +7,5 @@ router.post("/log", logSession);
 router.get("/viewProgress/:userId", viewProgress);
 router.get("/audio/categories", getAudioCategories);
 router.get("/video/categories", getVideoCategories);
-
+ 
 export default router;

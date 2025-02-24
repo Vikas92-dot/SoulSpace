@@ -1,26 +1,41 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import { DataTypes } from "sequelize";
+import sequelize from "../config/dbConfig.js";    
 
-const UserSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    profilePic: { type: String, default: "" },
-    level: { type: String, enum: ["beginner", "medium", "advanced"], default: "beginner" },
-    loginHistory: [{ type: Date }] // Array to store login timestamps
-}, { timestamps: true });
-
-// Hash password before saving
-UserSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+const User = sequelize.define("user",{
+    id:{
+        type:DataTypes.INTEGER,
+        primaryKey:true,
+        autoIncrement:true
+    },
+    name:{
+        type:DataTypes.STRING,
+        allowNull:false,
+    },
+    email:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
+    password:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
+    profilePic:{
+        type:DataTypes.STRING,
+        defaultValue:""
+    },
+    level:{
+        type: DataTypes.STRING,
+        enum:["begineer","medium","advanced"],
+        defaultValue:"beginner"
+    }
 });
 
-// Compare hashed password
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-};
+sequelize.sync()
+    .then(()=>{
+        console.log("User model created.");
+    }).catch(err=>{
+        console.log("Something wrong..",err);
+    })
 
-export default mongoose.model("User", UserSchema);
+export default User;
+    

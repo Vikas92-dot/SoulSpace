@@ -16,13 +16,20 @@ export const setReminder = async (req, res) => {
 // Get all reminders for a user
 export const getReminders = async (req, res) => {
     try {
-        const { userId } = req.query;
+        const { userId } = req.query;  // Use req.query for GET requests
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
         const reminders = await Notification.find({ userId });
-        res.status(200).json({ message: 'Reminders fetched successfully', reminders });
+
+        res.status(200).json({ message: "Reminders fetched successfully", reminders });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        console.error(error);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 
 // Delete a reminder
 export const deleteReminder = async (req, res) => {

@@ -1,14 +1,28 @@
-import mongoose from "mongoose";
+import { DataTypes } from "sequelize";
+import sequelize from "../config/dbConfig.js";
 
-const forumPostSchema = new mongoose.Schema({
-    title: String,
-    content: String,
-    userId: String,
-    likes: { type: [String], default: [] },  // Ensure likes is an array
-    comments: [{ userId: String, comment: String }],
-    reports: [{ userId: String, reason: String }],
-    bookmarks: { type: [String], default: [] }
-});
 
-const ForumPost = mongoose.model("ForumPost", forumPostSchema);
+const ForumPost = sequelize.define("forumPost", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  content: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, { timestamps: true });
+
+
+sequelize.sync().then(()=>{
+    console.log("Forum model created.");
+}).catch(err=>{
+    console.log("Error in Forum model:",err);
+})
+
 export default ForumPost;

@@ -1,74 +1,99 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { validationResult } from "express-validator";
 
 // Generate JWT Token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
-// Register User
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, level } = req.body;
-
-        // Check if user already exists
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: "User already exists" });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: "Bad request", errors });
         }
 
-        // Create user
-        const user = await User.create({ name, email, password, level });
+        const { name, email, profilePic, level } = req.body;
+        let { password } = req.body;
 
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
+        // Check if the user already exists
+        const userExists = await User.findOne({ where: { email } });
+        if (userExists) {
+            return res.status(400).json({ error: "User with this email already exists" });
+        }
+
+        // Hash the password
+        let saltKey = bcrypt.genSaltSync(10);
+        password = bcrypt.hashSync(password, saltKey);
+
+        // Create the user
+        const user = await User.create({ name, email, password, profilePic, level });
+
+        // Generate a token only during registration
+        const token = generateToken(user.id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(201).json({
+            message: "Registration successful",
+            user: {
+                id: user.id,
                 name: user.name,
                 email: user.email,
-                level: user.level,
-                token: generateToken(user._id)
-            });
-        } else {
-            res.status(400).json({ message: "Invalid user data" });
-        }
+                profilePic: user.profilePic,
+                level: user.level
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.log(error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-// Login User
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        let user = await User.findOne({ raw: true, where: { email } });
 
-        const user = await User.findOne({ email });
+        if (user) {
+            let hashPassword = user.password;
+            let status = bcrypt.compareSync(password, hashPassword);
 
-        if (user && (await user.matchPassword(password))) {
-            // Add current timestamp to loginHistory
-            user.loginHistory.push(new Date());
-            await user.save();
-
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                level: user.level,
-                loginHistory: user.loginHistory, // Send login history in response
-                token: generateToken(user._id)
-            });
+            if (status) {
+                const token = generateToken(user.id);
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                });
+                return res.status(200).json({
+                    message: "Login successful",
+                    user
+                });
+            } else {
+                return res.status(401).json({ error: "Invalid password" });
+            }
         } else {
-            res.status(401).json({ message: "Invalid email or password" });
+            return res.status(401).json({ error: "Invalid email" });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(401).json({ error: "Invalid credentials" });
     }
 };
 
-// Get User Profile
+
 export const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select("-password");
+        const { id } = req.params;
+        const user = await User.findByPk(id, { attributes: { exclude: ["password"] } });
         if (user) {
             res.json(user);
         } else {
@@ -79,17 +104,16 @@ export const getProfile = async (req, res) => {
     }
 };
 
-// Update Profile
 export const updateProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const { id } = req.params;
+        const user = await User.findByPk(id);
 
         if (user) {
             user.name = req.body.name || user.name;
             user.email = req.body.email || user.email;
             user.level = req.body.level || user.level;
 
-            // Hash new password before saving
             if (req.body.password) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(req.body.password, salt);
@@ -97,11 +121,10 @@ export const updateProfile = async (req, res) => {
 
             const updatedUser = await user.save();
             res.json({
-                _id: updatedUser.id,
+                id: updatedUser.id,
                 name: updatedUser.name,
                 email: updatedUser.email,
-                level: updatedUser.level,
-                token: generateToken(updatedUser._id)
+                level: updatedUser.level
             });
         } else {
             res.status(404).json({ message: "User not found" });

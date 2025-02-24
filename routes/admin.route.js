@@ -1,6 +1,8 @@
 import express from 'express';
+import {body} from "express-validator";
 import { 
-    login, 
+    signup, 
+    signIn,
     getAllUsers, 
     searchUserById, 
     deleteUserById
@@ -9,10 +11,15 @@ import {
 
 const router = express.Router();
 
-/** Admin Authentication */
-router.post('/login', login);
+// Admin Authentication
+router.post('/sign-up',
+    body("email","Invalid email Id").isEmail(),
+    body("email","Email id is required").notEmpty(),
+    body("password","Password is required").notEmpty(),
+    body("password","Password length should be 6 to 10").isLength({min:6,max:10}),signup);
+router.post('/sign-in', signIn); 
 
-/** User Management */
+// User Management 
 router.get('/users', getAllUsers);
 router.get('/users/:id', searchUserById);
 router.delete('/users/:id', deleteUserById);

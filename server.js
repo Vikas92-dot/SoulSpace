@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from "dotenv";
-import connectDB from './config/db.js';
+import cookieParser from 'cookie-parser';
 import AdminRouter from './routes/admin.route.js';
 //
 import userRoutes from './routes/user.route.js';
@@ -12,10 +12,11 @@ import forumRoutes from './routes/forum.route.js';
 import notificationRoutes from './routes/notification.route.js'
 
 dotenv.config();
-connectDB();
+
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/admin', AdminRouter);
 app.use("/analytics",analyticsRoutes);
