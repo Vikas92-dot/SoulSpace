@@ -1,0 +1,63 @@
+// SignUp
+{
+    "name": "Anas",
+    "email": "anas@gmail.com",
+    "password": "123456",
+    "profilePic": "",
+    "level": "adavnced"
+}
+//Signin
+{
+    "email": "rahul123@gmail.com",
+    "password": "123456"
+}
+
+//Meditation-log
+{
+    "userId": 4,
+    "title": "Morning Meditation",
+    "description": "A guided session to start the day",
+    "category": "audio",
+    "duration": 20,
+    "notes": "Felt calm and focused"
+  }
+  
+//Journal create
+
+{
+    "userId": 10,
+    "title": "My First Journal",
+    "content": "Today I learned about Sequelize and associations."
+}
+
+//journal update
+
+{
+    "title": "Updated Journal Title",
+    "content": "I updated my journal entry today."
+}
+
+//Quotes create
+{
+    "text": "The only limit to our realization of tomorrow is our doubts of today.",
+    "author": "Franklin D. Roosevelt"
+}
+//forum post create
+{
+    "title": "My First Forum Post",
+    "content": "This is a discussion about spirituality.",
+    "userId": 10  
+}
+//forum post comments
+{
+    "id": 1,
+    "userId": 10,
+    "commentText": "This is a great post!"
+  }
+//forum post likes
+{
+    "forumPostId": 1,
+    "userId": 5
+  }
+  
+  

@@ -1,12 +1,12 @@
 import express from "express";
-import { createPost, commentPost, likePost, reportPost, bookmarkPost } from "../controllers/forum.controller.js";
+import { createPost, commentPost, likePost,getPostDetails } from "../controllers/forum.controller.js";
 
 const router = express.Router();
 
 router.post("/createPost", createPost);
 router.post("/comment", commentPost);
 router.post("/like", likePost);
-router.post("/report", reportPost);
-router.post("/bookmark", bookmarkPost);
+router.get('/:postId/details',getPostDetails); //It defines that we want all information of post ex likes,comments and userInteraction
+
 
 export default router;

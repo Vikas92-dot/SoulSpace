@@ -7,6 +7,7 @@ import ForumPost from './forum.model.js';
 import MeditationSession from './meditation.model.js';
 import Quote from './quote.model.js';
 import Notification from './notification.model.js';
+import { Association } from 'sequelize';
 
 
 //One to Many 
@@ -42,3 +43,4 @@ SavedQuotes.belongsTo(Quote);
 
 
 
+export default Association;

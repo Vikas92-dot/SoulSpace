@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, getProfile, updateProfile } from "../controllers/user.controller.js";
+import { registerUser, loginUser, getProfile, updateProfile, verifyOtp } from "../controllers/user.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { body } from "express-validator";
 
@@ -13,6 +13,7 @@ router.post("/register",
 
 
 router.post("/login", loginUser);
+router.post('/verify-otp', verifyOtp);
 router.get("/getProfile/:id", protect, getProfile);
 router.put("/editProfile/:id", protect, updateProfile);
 

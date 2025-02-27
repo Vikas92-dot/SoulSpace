@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
+import { Gmail } from "../middleware/SendMail.js";
+import { Template } from "../middleware/Template.js";
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -28,8 +30,25 @@ export const registerUser = async (req, res) => {
         let saltKey = bcrypt.genSaltSync(10);
         password = bcrypt.hashSync(password, saltKey);
 
+        //generate otp
+        const ada = new Gmail();
+        let otp = ada.generateOtp(6);
+        
         // Create the user
-        const user = await User.create({ name, email, password, profilePic, level });
+        const user = await User.create({ name, email, password, profilePic, level ,otp });
+
+        const data = {
+            appName:"SoulSpace",
+            email: user.email,
+            otp: user.otp,
+            name: user.name,
+            subject: "OTP Verification",
+            year: new Date().getFullYear()
+        }
+        
+        const templateData = new Template().getOtpTemplate(data);
+        ada.mail(data,templateData);
+
 
         // Generate a token only during registration
         const token = generateToken(user.id);
@@ -48,7 +67,8 @@ export const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 profilePic: user.profilePic,
-                level: user.level
+                level: user.level,
+                otp: user.otp
             }
         });
     } catch (error) {
@@ -56,7 +76,39 @@ export const registerUser = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+export const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        console.log(req.body);
+        
 
+        if (!email || !otp) {
+            return res.status(400).json({ error: "Email and OTP are required" });
+        }
+
+        // Find the user by email
+        const user = await User.findOne({ where: { email } });
+        console.log(user.otp);
+        
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Check if the OTP matches
+        if (user.otp !== otp) {
+            return res.status(400).json({ error: "Invalid OTP" });
+        }
+
+        // Clear OTP after successful verification
+        await user.update({ otp: null });
+
+        return res.status(200).json({ message: "OTP verified successfully" });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -133,3 +185,8 @@ export const updateProfile = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+// export const OtpVerify = async(req,res)=>{
+//     const
+// }

@@ -10,6 +10,7 @@ import quoteRoutes from './routes/quote.route.js';
 import analyticsRoutes from './routes/analytics.route.js';
 import forumRoutes from './routes/forum.route.js';
 import notificationRoutes from './routes/notification.route.js'
+import  Association  from './models/association.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/journal", journalRoutes);
 app.use("/quotes", quoteRoutes);
 app.use("/forum", forumRoutes);
 app.use("/notifications", notificationRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;

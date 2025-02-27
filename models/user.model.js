@@ -27,6 +27,9 @@ const User = sequelize.define("user",{
         type: DataTypes.STRING,
         enum:["begineer","medium","advanced"],
         defaultValue:"beginner"
+    },
+    otp:{
+        type: DataTypes.INTEGER
     }
 });
 

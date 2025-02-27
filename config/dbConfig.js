@@ -9,7 +9,8 @@ const sequelize = new Sequelize(
     "root",
     {
     host: "localhost",
-    dialect: "mysql"
+    dialect: "mysql",
+    logging: false,
  });
  
 sequelize.authenticate()
