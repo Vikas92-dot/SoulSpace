@@ -4,28 +4,6 @@ import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
 
 
-export const signIn = async (request, response) => {
-    try {
-        let { email, password } = request.body;
-        let admin = await Admin.findOne({ raw: true, where: { email } });
-
-        if (!admin) {
-            return response.status(401).json({ error: "Bad request | Invalid email id" });
-        }
-
-        let hashPassword = admin.password;
-        let status = bcrypt.compareSync(password, hashPassword);
-
-        return status
-            ? response.status(200).json({ message: "Sign in success", admin })
-            : response.status(401).json({ error: "Bad request | Invalid password" });
-
-    } catch (err) {
-        return response.status(500).json({ error: "Internal Server Error" });
-    }
-};
-
-
 export const signup = async (request, response) => {
     const errors = validationResult(request);
 
@@ -45,6 +23,26 @@ export const signup = async (request, response) => {
 
     } catch (err) {
         console.log(err);
+        return response.status(500).json({ error: "Internal Server Error" });
+    }
+};
+export const signIn = async (request, response) => {
+    try {
+        let { email, password } = request.body;
+        let admin = await Admin.findOne({ raw: true, where: { email } });
+
+        if (!admin) {
+            return response.status(401).json({ error: "Bad request | Invalid email id" });
+        }
+
+        let hashPassword = admin.password;
+        let status = bcrypt.compareSync(password, hashPassword);
+
+        return status
+            ? response.status(200).json({ message: "Sign in success", admin })
+            : response.status(401).json({ error: "Bad request | Invalid password" });
+
+    } catch (err) {
         return response.status(500).json({ error: "Internal Server Error" });
     }
 };

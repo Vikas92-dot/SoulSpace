@@ -32,7 +32,10 @@ export const registerUser = async (req, res) => {
 
         //generate otp
         const ada = new Gmail();
-        let otp = ada.generateOtp(6);
+        let otpCode = ada.generateOtp(6);
+        let otp = JSON.stringify({ code: otpCode, timestamp: Date.now() });
+
+
         
         // Create the user
         const user = await User.create({ name, email, password, profilePic, level ,otp });
@@ -40,7 +43,7 @@ export const registerUser = async (req, res) => {
         const data = {
             appName:"SoulSpace",
             email: user.email,
-            otp: user.otp,
+            otp: JSON.parse(user.otp).code,
             name: user.name,
             subject: "OTP Verification",
             year: new Date().getFullYear()
@@ -54,7 +57,7 @@ export const registerUser = async (req, res) => {
         const token = generateToken(user.id);
 
         res.cookie("token", token, {
-            httpOnly: true,
+            httpOnly: true,  // to koi JavaScript code document.cookie se isko access nahi kar sakta
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 30 * 24 * 60 * 60 * 1000
@@ -69,7 +72,7 @@ export const registerUser = async (req, res) => {
                 profilePic: user.profilePic,
                 level: user.level,
                 otp: user.otp
-            }
+            } 
         });
     } catch (error) {
         console.log(error);
@@ -79,8 +82,7 @@ export const registerUser = async (req, res) => {
 export const verifyOtp = async (req, res) => {
     try {
         const { email, otp } = req.body;
-        console.log(req.body);
-        
+                
 
         if (!email || !otp) {
             return res.status(400).json({ error: "Email and OTP are required" });
@@ -93,9 +95,16 @@ export const verifyOtp = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
+        // Parse stored OTP JSON
+        const storedOtp = JSON.parse(user.otp);
 
-        // Check if the OTP matches
-        if (user.otp !== otp) {
+        // Check OTP expiration (5 minutes = 300000 ms)
+        if (Date.now() - storedOtp.timestamp > 300000) {
+            return res.status(400).json({ error: "OTP has expired" });
+        }
+
+        // Verify OTP
+         if (storedOtp.code !== otp) {
             return res.status(400).json({ error: "Invalid OTP" });
         }
 
@@ -187,6 +196,3 @@ export const updateProfile = async (req, res) => {
 };
 
 
-// export const OtpVerify = async(req,res)=>{
-//     const
-// }

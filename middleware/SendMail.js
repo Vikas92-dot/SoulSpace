@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export class Gmail {
     async mail(data,template) {
@@ -7,21 +9,18 @@ export class Gmail {
             port: 465,               // true for 465, false for other ports
             host: "smtp.gmail.com",
             auth: {
-                user: 'vikasmathe143@gmail.com',
-                pass: 'slhg fhik syqr buqc',
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
             secure: true,
         });
-
-
         const mailData = {
             from: 'vikasmathe143@gmail.com',  // sender address
             to: data.email,   // list of receivers
             subject: 'Sending Email using Node.js',
-          html: template
+          html: template 
         };
-        
-        
+    
     transporter.sendMail(mailData, function(err, info) {
         if (err)
             console.log(err)

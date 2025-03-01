@@ -29,7 +29,7 @@ const User = sequelize.define("user",{
         defaultValue:"beginner"
     },
     otp:{
-        type: DataTypes.INTEGER
+        type: DataTypes.STRING
     }
 });
 
@@ -37,7 +37,7 @@ sequelize.sync()
     .then(()=>{
         console.log("User model created.");
     }).catch(err=>{
-        console.log("Something wrong..",err);
+        console.log("Something wrong..User",err);
     })
 
 export default User;

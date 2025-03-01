@@ -13,7 +13,7 @@ const Notification = sequelize.define("notification", {
         allowNull: false
     },
     time: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false
     },
     status:{
