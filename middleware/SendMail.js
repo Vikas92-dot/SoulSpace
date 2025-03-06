@@ -17,7 +17,7 @@ export class Gmail {
         const mailData = {
             from: 'vikasmathe143@gmail.com',  // sender address
             to: data.email,   // list of receivers
-            subject: 'Sending Email using Node.js',
+            subject: 'SoulSpace OTP Verification – Complete Your Signup',
           html: template 
         };
     

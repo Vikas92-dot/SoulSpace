@@ -17,4 +17,5 @@ router.post('/verify-otp', verifyOtp);
 router.get("/getProfile/:id", protect, getProfile);
 router.put("/editProfile/:id", protect, updateProfile);
 
+
 export default router;

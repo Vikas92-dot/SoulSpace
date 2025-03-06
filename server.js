@@ -11,11 +11,15 @@ import analyticsRoutes from './routes/analytics.route.js';
 import forumRoutes from './routes/forum.route.js';
 import notificationRoutes from './routes/notification.route.js'
 import  Association  from './models/association.js';
+import cors from 'cors';
 
 dotenv.config();
 
 
 const app = express();
+
+app.use(cors());
+
 app.use(express.json());
 app.use(cookieParser());
 

@@ -8,7 +8,7 @@ import { Template } from "../middleware/Template.js";
 // Generate JWT Token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-};
+}; 
 
 export const registerUser = async (req, res) => {
     try {
@@ -35,8 +35,6 @@ export const registerUser = async (req, res) => {
         let otpCode = ada.generateOtp(6);
         let otp = JSON.stringify({ code: otpCode, timestamp: Date.now() });
 
-
-        
         // Create the user
         const user = await User.create({ name, email, password, profilePic, level ,otp });
 
@@ -57,10 +55,10 @@ export const registerUser = async (req, res) => {
         const token = generateToken(user.id);
 
         res.cookie("token", token, {
-            httpOnly: true,  // to koi JavaScript code document.cookie se isko access nahi kar sakta
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 30 * 24 * 60 * 60 * 1000
+            httpOnly: true, 
+            secure: false,  
+            sameSite: "lax",  
+            maxAge: 30 * 24 * 60 * 60 * 1000 
         });
 
         return res.status(201).json({
@@ -71,7 +69,7 @@ export const registerUser = async (req, res) => {
                 email: user.email,
                 profilePic: user.profilePic,
                 level: user.level,
-                otp: user.otp
+                otp: JSON.parse(user.otp).code
             } 
         });
     } catch (error) {
@@ -137,7 +135,8 @@ export const loginUser = async (req, res) => {
                 });
                 return res.status(200).json({
                     message: "Login successful",
-                    user
+                    user,
+                    token
                 });
             } else {
                 return res.status(401).json({ error: "Invalid password" });

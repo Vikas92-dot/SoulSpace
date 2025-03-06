@@ -25,7 +25,7 @@ const User = sequelize.define("user",{
     },
     level:{
         type: DataTypes.STRING,
-        enum:["begineer","medium","advanced"],
+        enum:["beginner","intermediate","advanced"],
         defaultValue:"beginner"
     },
     otp:{
