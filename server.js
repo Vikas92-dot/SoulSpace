@@ -12,16 +12,26 @@ import forumRoutes from './routes/forum.route.js';
 import notificationRoutes from './routes/notification.route.js'
 import  Association  from './models/association.js';
 import cors from 'cors';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 dotenv.config();
 
 
+
 const app = express();
 
+
+// Get the current file's directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cors());
 
 app.use(express.json());
 app.use(cookieParser());
+
 
 app.use('/admin', AdminRouter);
 app.use("/analytics",analyticsRoutes);

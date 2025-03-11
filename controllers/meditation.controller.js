@@ -9,6 +9,8 @@ export const logSession = async (req, res) => {
         await MeditationSession.create({ title, description, category, duration, notes,userId });
         res.status(201).json({ message: "Meditation session logged successfully" });
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({ error: error.message });
     }
 };

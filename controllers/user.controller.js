@@ -10,6 +10,23 @@ const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 }; 
 
+export const uploadProfilePicture = async (req,res)=>{
+    try {
+        const userId = req.params.id;
+        if(!req.file) {return res.status(400).json({error:"Please upload an image"})}
+
+        const imagePath = `/uploads/${req.file.filename}`; // Store relative path
+
+        // Update user profile with image path
+        await User.update({ profilePic: imagePath }, { where: { id: userId } });
+
+        res.json({ message: "Profile picture uploaded successfully", imagePath });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error uploading profile picture" });
+    }
+}
+
 export const registerUser = async (req, res) => {
     try {
         const errors = validationResult(req);
