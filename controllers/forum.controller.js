@@ -4,6 +4,8 @@ import User from "../models/user.model.js";
 import ForumPostComments from "../models/forumPostComments.model.js";
 import { Op } from "sequelize";
 
+
+
 // Create a new post
 export const createPost = async (req, res) => {
   try {
@@ -66,7 +68,83 @@ export const likePost = async (req, res) => {
   }
 };
 
-//Post details
+//All post details
+
+export const getAllPosts = async (req, res) => {
+  try {
+    const posts = await ForumPost.findAll({
+      include: [
+        {
+          model: ForumPostComments,
+          as: "comments",
+          attributes: ["id", "commentText", "createdAt"], // Include createdAt
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "name"],
+            },
+          ],
+        },
+        {
+          model: Like,
+          as: "likes",
+          attributes: ["id"],
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "name"],
+            },
+          ],
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name"], // Fetch post creator details
+        },
+      ],
+      attributes: ["id", "title", "content", "createdAt"], // Include post createdAt
+      order: [["createdAt", "DESC"]], // Sort by latest posts first
+    });
+
+    if (!posts.length) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+
+    res.json(
+      posts.map((post) => ({
+        postId: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt, // Post created date
+        author: {
+          userId: post.user.id,
+          userName: post.user.name,
+        },
+        commentCount: post.comments.length,
+        likeCount: post.likes.length,
+        comments: post.comments.map((comment) => ({
+          userId: comment.user.id,
+          userName: comment.user.name,
+          comment: comment.commentText,
+          createdAt: comment.createdAt, // Comment created date
+        })),
+        likes: post.likes.map((like) => ({
+          userId: like.user.id,
+          userName: like.user.name,
+        })),
+      }))
+    );
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+//Post details by PostId
 export const getPostDetails = async (req, res) => {
   try {
     const { postId } = req.params;
