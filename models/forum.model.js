@@ -15,7 +15,7 @@ const ForumPost = sequelize.define("forumPost", {
   content: {
     type: DataTypes.STRING,
     allowNull: false
-  }
+  },
 }, { timestamps: true });
 
 

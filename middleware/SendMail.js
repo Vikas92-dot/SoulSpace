@@ -30,6 +30,31 @@ export class Gmail {
     return;
 }
 
+//Function to Send Notifications
+async sendNotification(email, message) {
+    const transporter = nodemailer.createTransport({
+        port: 465,
+        host: "smtp.gmail.com",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+        secure: true,
+    });
+
+    const mailData = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "SoulSpace Notification",
+        text: message,
+    };
+
+    transporter.sendMail(mailData, function(err, info) {
+        if (err) console.log("Notification Error:", err);
+        else console.log(`Notification sent to ${email}:`, info.response);
+    });
+}
+
 
 generateOtp(limit, type = "digit") {
     let characters = "0123456789";

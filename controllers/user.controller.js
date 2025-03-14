@@ -68,16 +68,6 @@ export const registerUser = async (req, res) => {
         ada.mail(data,templateData);
 
 
-        // Generate a token only during registration
-        const token = generateToken(user.id);
-
-        res.cookie("token", token, {
-            httpOnly: true, 
-            secure: false,  
-            sameSite: "lax",  
-            maxAge: 30 * 24 * 60 * 60 * 1000 
-        });
-
         return res.status(201).json({
             message: "Registration successful",
             user: {
@@ -138,7 +128,7 @@ export const loginUser = async (req, res) => {
         const { email, password } = req.body;
         let user = await User.findOne({ raw: true, where: { email } });
 
-        if (user) {
+        if (user && user.otp === null) {
             let hashPassword = user.password;
             let status = bcrypt.compareSync(password, hashPassword);
 

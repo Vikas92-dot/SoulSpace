@@ -17,7 +17,7 @@ router.post("/login", loginUser);
 router.post('/verify-otp', verifyOtp);
 router.get("/getProfile/:id", protect, getProfile);
 router.put("/editProfile/:id", protect, updateProfile);
-router.post("/upload/:id",upload.single("profilePic"),uploadProfilePicture);
+router.post("/upload/:id",upload.single("image"),uploadProfilePicture);
 
 
 export default router;

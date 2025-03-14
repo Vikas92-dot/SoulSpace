@@ -1,61 +1,33 @@
-import Notification from '../models/notification.model.js';
+import Notification from "../models/notification.model.js";
+import User from "../models/user.model.js";
 
-// Set a reminder
-export const setReminder = async (req, res) => {
-    try {
-        const { userId, type, time, status = 1 } = req.body; // Ensure `type` is used instead of `message`
-        
-        // Validate required fields
-        if (!userId || !type || !time) {
-            return res.status(400).json({ message: "User ID, type, and time are required" });
-        }
+//Set Notification for User
+export const setNotification = async (req, res) => {
+  const { userId, type, time } = req.body;
 
-        const newReminder = new Notification({
-            userId,
-            type,
-            time,  // Ensure correct format if using `datetime`
-            status,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-        await newReminder.save();
-        res.status(201).json({ message: 'Reminder set successfully', newReminder });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
+    const notification = await Notification.create({ userId, type, time });
+    res.json({ message: "Notification scheduled successfully!", notification });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Get all reminders for a user
-export const getReminders = async (req, res) => {
-    try {
-        const { userId } = req.query;
-        if (!userId) {
-            return res.status(400).json({ message: "User ID is required" });
-        }
+// Get User Notifications
+export const getUserNotifications = async (req, res) => {
+  const { userId } = req.params;
 
-        const reminders = await Notification.findOne({ userId });
-        res.status(200).json({ message: "Reminders fetched successfully", reminders });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId },
+      include: [{ model: User, attributes: ["email"] }],
+    });
 
-// Delete a reminder
-export const deleteReminder = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedReminder = await Notification.destroy({where: {id}});
-        
-        if (!deletedReminder) {
-            return res.status(404).json({ message: 'Reminder not found' });
-        }
-
-        res.status(200).json({ message: 'Reminder deleted successfully' });
-    } catch (error) {
-        console.log(error);
-        
-        res.status(500).json({ message: 'Server error', error });
-    }
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
