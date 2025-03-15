@@ -5,7 +5,8 @@ import {
     signIn,
     getAllUsers, 
     searchUserById, 
-    deleteUserById
+    deleteUserById,
+    deleteForumPost
 } from '../controllers/admin.controller.js';
 
 
@@ -23,6 +24,7 @@ router.post('/sign-in', signIn);
 router.get('/users', getAllUsers);
 router.get('/users/:id', searchUserById);
 router.delete('/users/:id', deleteUserById);
+router.delete('/forum/:id', deleteForumPost);
 
 
 

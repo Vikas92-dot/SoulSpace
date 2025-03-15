@@ -2,6 +2,7 @@ import Admin from "../models/admin.model.js";
 import User from "../models/user.model.js";
 import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
+import ForumPost from "../models/forum.model.js";
 
 
 export const signup = async (request, response) => {
@@ -90,3 +91,21 @@ export const deleteUserById = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+export const deleteForumPost = async (req, res) => {
+    try {
+        const id = req.params.id;
+        console.log(id);
+        
+        const forum = await ForumPost.findByPk(id);
+
+        if (!forum) {
+            return res.status(404).json({ message: "Forum not found" });
+        }
+        let result = await ForumPost.destroy({where: {id}});
+        result ? res.status(200).json({message: "Forum deleted successfully"})
+         : res.status(404).json({message: "Error in delete post"});
+    } catch (error) {
+        return res.status(500).json({error: "Internal server error",error});
+    }
+}
