@@ -14,35 +14,69 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-//For sending notification to user
-import cron from 'node-cron';
-import Notification from './models/notification.model.js';
-import User from './models/user.model.js';
-import {Gmail} from './middleware/SendMail.js'
+import cron from "node-cron";
+import Notification from "./models/notification.model.js";
+import User from "./models/user.model.js";
+import { Gmail } from "./middleware/SendMail.js";
+import { Op } from "sequelize";
 
 const gmail = new Gmail();
 
-// Cron Job - Runs every minute to check scheduled emails
 cron.schedule("* * * * *", async () => {
   try {
-    const now = new Date();
-    const currentTime = now.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+    console.log("🔔 Running cron job for sending notifications...");
 
+    const now = new Date();
+    const oneMinuteAgo = new Date(now.getTime() - 60000); // 1 minute ago
+    const oneMinuteLater = new Date(now.getTime() + 60000); // 1 minute later
+
+    console.log(`📅 Checking notifications between ${oneMinuteAgo} and ${oneMinuteLater}`);
+
+    // Fetch notifications within the 1-minute window with status = true
     const notifications = await Notification.findAll({
-      where: { time: currentTime, status: true },
+      where: {
+        time: { [Op.between]: [oneMinuteAgo, oneMinuteLater] },
+        status: true,
+      },
       include: [{ model: User, attributes: ["email"] }],
     });
 
-    for (const notification of notifications) {
-      if (notification.User?.email) {
-        await gmail.sendNotification(notification.User.email, `Reminder: ${notification.type}`);
-        console.log(`Email sent to ${notification.User.email}`);
+    console.log(`🔍 Found ${notifications.length} notifications to process`);
+    const simpleNotifications = notifications.map(n => n.get({ plain: true }));
+    console.log(simpleNotifications);
+    //console.log(simpleNotifications[0].user); // Access user directly
+
+    
+
+    // Prepare emails to send
+    const emailPromises = notifications.map(async (notification) => {
+      if (simpleNotifications[0].user.email) {
+        console.log(`📧 Sending email to: ${simpleNotifications[0].user.email}`);
+        await gmail.sendNotification(simpleNotifications[0].user.email, `Reminder: ${notification.type}`);
+        return notification.id;
       }
+      console.warn(`⚠️ Notification ID ${notification.id} has no associated email.`);
+      return null;
+    });
+
+    // Wait for all emails to be sent
+    const sentNotificationIds = (await Promise.all(emailPromises)).filter(Boolean);
+
+    // Update the status of sent notifications
+    if (sentNotificationIds.length > 0) {
+      await Notification.update(
+        { status: false }, // Mark notifications as sent
+        { where: { id: sentNotificationIds } }
+      );
+      console.log(`✅ Successfully updated status for ${sentNotificationIds.length} notifications.`);
+    } else {
+      console.log("⚠️ No notifications were updated.");
     }
   } catch (error) {
-    console.error("Error in sending notifications:", error);
+    console.error("❌ Error in cron job:", error);
   }
 });
+
 
 dotenv.config();
 

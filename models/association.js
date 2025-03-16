@@ -29,7 +29,7 @@ ForumPost.belongsTo(User);
 User.hasMany(MeditationSession);
 MeditationSession.belongsTo(User);
 
-User.hasMany(Notification);
+User.hasMany(Notification); 
 Notification.belongsTo(User);
 
 ForumPost.hasMany(ForumPostComments, { as: "comments" });
