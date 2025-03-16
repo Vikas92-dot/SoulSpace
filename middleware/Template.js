@@ -70,7 +70,76 @@ export class Template {
         return template;
     }
 
-
+    meditationNotification(data) {
+        if (!data) {
+            throw new Error("Data Not Found");
+        }
+        let template = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.subject}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f7fa;
+            text-align: center;
+            padding: 20px;
+            color: #4a4a4a;
+        }
+        .container {
+            max-width: 450px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            border-top: 6px solid #42a5f5;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #42a5f5;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            background: #42a5f5;
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-decoration: none;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 13px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Your Meditation Awaits</div>
+        <p class="content">Dear <strong>${data.name}</strong>,</p>
+        <p class="content">It's time to take a deep breath and find your inner peace with today's meditation session on <strong>${data.sessionTitle}</strong>.</p>
+        <a class="highlight" href="${data.sessionLink}">Start Meditation</a>
+        <p class="content">Make time for yourself and embrace the tranquility.</p>
+        <p class="footer">If you have any questions, feel free to reach out to us.</p>
+        <hr>
+        <p class="footer">&copy; ${data.year} <strong>${data.appName}</strong>. All rights reserved.</p>
+    </div>
+</body>
+</html>`;
+        return template;
+    }
 
     forgotPassword(data) {
         if (!data) {

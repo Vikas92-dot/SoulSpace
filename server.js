@@ -19,18 +19,19 @@ import Notification from "./models/notification.model.js";
 import User from "./models/user.model.js";
 import { Gmail } from "./middleware/SendMail.js";
 import { Op } from "sequelize";
+import { Template } from './middleware/Template.js';
 
 const gmail = new Gmail();
 
 cron.schedule("* * * * *", async () => {
   try {
-    console.log("🔔 Running cron job for sending notifications...");
+    console.log("Running cron job for sending notifications...");
 
     const now = new Date();
     const oneMinuteAgo = new Date(now.getTime() - 60000); // 1 minute ago
     const oneMinuteLater = new Date(now.getTime() + 60000); // 1 minute later
 
-    console.log(`📅 Checking notifications between ${oneMinuteAgo} and ${oneMinuteLater}`);
+    console.log(`Checking notifications between ${oneMinuteAgo} and ${oneMinuteLater}`);
 
     // Fetch notifications within the 1-minute window with status = true
     const notifications = await Notification.findAll({
@@ -38,27 +39,44 @@ cron.schedule("* * * * *", async () => {
         time: { [Op.between]: [oneMinuteAgo, oneMinuteLater] },
         status: true,
       },
-      include: [{ model: User, attributes: ["email"] }],
+      include: [{ model: User, attributes: ["email","name"] }],
     });
 
-    console.log(`🔍 Found ${notifications.length} notifications to process`);
+    console.log(`Found ${notifications.length} notifications to process`);
     const simpleNotifications = notifications.map(n => n.get({ plain: true }));
     console.log(simpleNotifications);
-    //console.log(simpleNotifications[0].user); // Access user directly
-
+    
+    //const email = simpleNotifications[0].user.email;
     
 
     // Prepare emails to send
-    const emailPromises = notifications.map(async (notification) => {
-      if (simpleNotifications[0].user.email) {
-        console.log(`📧 Sending email to: ${simpleNotifications[0].user.email}`);
-        await gmail.sendNotification(simpleNotifications[0].user.email, `Reminder: ${notification.type}`);
+    const emailPromises = simpleNotifications.map(async (notification) => {
+
+      if (notification.user && notification.user.email) {  
+        console.log(`Sending email to: ${notification.user.email}`);
+    
+        const data = {
+          appName: "SoulSpace",
+          email: notification.user.email,
+          name: notification.user.name,
+          subject: "Notification for Meditation",
+          sessionTitle: notification.type,
+          sessionLink: process.env.SESSION_LINK,
+          year: new Date().getFullYear(),
+        };
+        
+        console.log("Data values: ", data);
+    
+        const templateData = new Template().meditationNotification(data);
+    
+        await gmail.sendNotification(data, templateData);
         return notification.id;
       }
-      console.warn(`⚠️ Notification ID ${notification.id} has no associated email.`);
+    
+      console.log(`Notification ID ${notification.id} has no associated email.`);
       return null;
     });
-
+    
     // Wait for all emails to be sent
     const sentNotificationIds = (await Promise.all(emailPromises)).filter(Boolean);
 
@@ -68,12 +86,12 @@ cron.schedule("* * * * *", async () => {
         { status: false }, // Mark notifications as sent
         { where: { id: sentNotificationIds } }
       );
-      console.log(`✅ Successfully updated status for ${sentNotificationIds.length} notifications.`);
+      console.log(`Successfully updated status for ${sentNotificationIds.length} notifications.`);
     } else {
-      console.log("⚠️ No notifications were updated.");
+      console.log("No notifications were updated.");
     }
   } catch (error) {
-    console.error("❌ Error in cron job:", error);
+    console.error("Error in cron job:", error);
   }
 });
 

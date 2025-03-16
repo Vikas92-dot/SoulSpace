@@ -31,7 +31,7 @@ export class Gmail {
 }
 
 //Function to Send Notifications
-async sendNotification(email, message) {
+async sendNotification(data, template) {
     const transporter = nodemailer.createTransport({
         port: 465,
         host: "smtp.gmail.com",
@@ -44,9 +44,9 @@ async sendNotification(email, message) {
 
     const mailData = {
         from: process.env.EMAIL_USER,
-        to: email,
-        subject: "SoulSpace Notification",
-        text: message,
+        to: data.email,
+        subject: "SoulSpace Meditation Notification",
+        html: template,
     };
 
     transporter.sendMail(mailData, function(err, info) {
