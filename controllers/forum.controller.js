@@ -131,8 +131,8 @@ export const getAllPosts = async (req, res) => {
           createdAt: comment.createdAt, // Comment created date
         })),
         likes: post.likes.map((like) => ({
-          userId: like.user.id,
-          userName: like.user.name,
+          userId: like.user?.id,
+          userName: like.user?.name,
         })),
       }))
     );
