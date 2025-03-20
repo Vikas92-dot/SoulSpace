@@ -15,7 +15,7 @@ export class Gmail {
             secure: true,
         });
         const mailData = {
-            from: 'vikasmathe143@gmail.com',  // sender address
+            from: 'soulspace.app.team@gmail.com',  // sender address
             to: data.email,   // list of receivers
             subject: 'SoulSpace OTP Verification – Complete Your Signup',
           html: template 

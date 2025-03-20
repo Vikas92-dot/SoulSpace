@@ -103,52 +103,6 @@ cron.schedule("* * * * *", async () => {
 
 const app = express();
 
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: "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",
-});
-
-const completion = openai.chat.completions.create({
-  model: "gpt-4o-mini",
-  store: true,
-  messages: [
-    {"role": "user", "content": "write a haiku about ai"},
-  ],
-});
-
-completion.then((result) => console.log(result.choices[0].message));
-
-
-// Multer setup for file upload
-const upload = multer({ dest: "uploads/" });
-
-app.post("/transcribe", upload.single("audio"), async (req, res) => {
-  try {
-    const audioPath = req.file.path;
-
-    // Call OpenAI Whisper API
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
-      model: "whisper-1",
-    });
-
-    // Delete the uploaded file after processing
-    fs.unlinkSync(audioPath);
-
-    res.json({ text: transcription.text });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Something went wrong!" });
-  }
-});
-
-
-
-
-
-
-
 // Get the current file's directory
 const __filename = fileURLToPath(import.meta.url);//it returns current module URL and covert into normal path url
 const __dirname = path.dirname(__filename);

@@ -10,6 +10,97 @@ const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 }; 
 
+export const forgotOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        console.log(email);
+        const user = await User.findOne({ where: { email } });
+        console.log(user);
+        if (user) {
+            // Generate OTP
+            const ada = new Gmail();
+            let otpCode = ada.generateOtp(6);
+            let otp = JSON.stringify({ code: otpCode, timestamp: Date.now() });
+            console.log("Generated OTP:", otpCode);
+
+            // Update user's OTP field
+            user.otp = otp;
+            await user.update({ otp });
+
+            const info = {
+                appName: "SoulSpace",
+                email: user.email,
+                otp: otpCode, // Use the newly generated OTP
+                name: user.name,
+                subject: "Forgot Password",
+                year: new Date().getFullYear()
+            };
+
+            const templateData = new Template().forgotPassword(info);
+            ada.mail(info, templateData);
+
+            res.json({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                level: user.level,
+                password: user.password,
+                otp: otpCode // Send OTP to client
+            });
+
+        } else {
+            return res.status(400).json({ message: "Invalid Email ID" });
+        }
+    } catch (error) {
+        console.error("Error in forgotOtp:", error);
+        return res.status(500).json({ message: "Internal server error", error });
+    }
+};
+
+export const forgotPassword = async (req,res)=>{
+    try {
+        let { email, otp, password} = req.body;
+                
+
+        if (!email || !otp || !password) {
+            return res.status(400).json({ error: "Fields required" });
+        }
+
+        // Find the user by email
+        const user = await User.findOne({ where: { email } });
+        console.log(user.otp);
+        
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        // Hash the password
+        let saltKey = bcrypt.genSaltSync(10);
+        password = bcrypt.hashSync(password, saltKey);
+        
+        // Parse stored OTP JSON
+        const storedOtp = JSON.parse(user.otp);
+
+        // Check OTP expiration (5 minutes = 300000 ms)
+        if (Date.now() - storedOtp.timestamp > 300000) {
+            return res.status(400).json({ error: "OTP has expired" });
+        }
+
+        // Verify OTP
+         if (storedOtp.code !== otp) {
+            return res.status(400).json({ error: "Invalid OTP" });
+        }
+        
+        // Clear OTP after successful verification
+        await user.update({ otp: null,password });
+
+        return res.status(200).json({ message: "OTP verified successfully" });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 export const uploadProfilePicture = async (req,res)=>{
     try {
         const userId = req.params.id;
@@ -123,6 +214,8 @@ export const verifyOtp = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
