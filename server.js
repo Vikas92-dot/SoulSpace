@@ -22,8 +22,8 @@ import { Gmail } from "./middleware/SendMail.js";
 import { Op } from "sequelize";
 import { Template } from './middleware/Template.js';
 
-import multer from 'multer';
-import fs from 'fs';
+// import multer from 'multer';
+// import fs from 'fs';
 
 
 dotenv.config();

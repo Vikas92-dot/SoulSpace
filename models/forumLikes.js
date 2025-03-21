@@ -9,7 +9,7 @@ const ForumPostLikes = sequelize.define("forumPostLikes",{
   }
 });
 
-sequelize.sync({alter: true})
+sequelize.sync()
 .then(()=>{
     console.log("ForumLikes model created...");
 }).catch(err=>{

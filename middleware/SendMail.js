@@ -17,8 +17,8 @@ export class Gmail {
         const mailData = {
             from: 'soulspace.app.team@gmail.com',  // sender address
             to: data.email,   // list of receivers
-            subject: 'SoulSpace OTP Verification – Complete Your Signup',
-          html: template 
+            subject: 'Welcome to SoulSpace – Complete Your Signup by OTP Verification',
+            html: template 
         };
     
     transporter.sendMail(mailData, function(err, info) {
@@ -51,7 +51,7 @@ async sendNotification(data, template) {
 
     transporter.sendMail(mailData, function(err, info) {
         if (err) console.log("Notification Error:", err);
-        else console.log(`Notification sent to ${email}:`, info.response);
+        else console.log(`Notification sent to ${data.email}:`, info.response);
     });
 }
 
